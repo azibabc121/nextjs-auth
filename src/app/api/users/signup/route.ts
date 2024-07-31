@@ -6,10 +6,13 @@ import { sendMail } from "@/helpers/mailer";
 
 connectDb()
 
-export async function Post(request: NextRequest) {
+export async function POST(request: NextRequest) {
+    const reqBody = await request.json();
+    const { username, email, password } = reqBody;
+    if (!username || !email || !password) {
+        return NextResponse.json({ error: "All the fields are required" }, { status: 404 })
+    }
     try {
-        const reqBody = await request.json();
-        const { username, email, password } = reqBody;
         // validation
         console.log(reqBody);
 
@@ -20,7 +23,7 @@ export async function Post(request: NextRequest) {
         }
 
         const salt = await bcryptJs.genSalt(10)
-        const hashedPassword = bcryptJs.hash(password, salt)
+        const hashedPassword = await bcryptJs.hash(password, salt)
 
         const newUser = new User({
             username,
@@ -41,7 +44,7 @@ export async function Post(request: NextRequest) {
             savedUser
         })
 
-        
+
 
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 })
